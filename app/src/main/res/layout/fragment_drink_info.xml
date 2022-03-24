@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".presentation.fragment.DrinkInfoFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/menuToolbarDrinkInfo"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="?attr/actionBarSize">
+
+        <TextView
+            android:id="@+id/tvDrinkName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:gravity="center_horizontal"
+            android:textSize="@dimen/title_text_size" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvDrinkInfo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="@dimen/cocktail_card_view_margin_external_horizontal"
+        android:layout_marginTop="@dimen/cocktail_card_view_margin_external_top"
+        android:layout_marginBottom="@dimen/cocktail_detail_margin_bottom"
+        android:background="@color/white"
+        android:visibility="visible"
+        app:cardCornerRadius="@dimen/item_cocktail_recipe_corner_radius"
+        app:cardElevation="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/cocktail_card_view_margin_internal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/ivCocktailImageDetail"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginBottom="@dimen/cocktail_image_detail_margin_bottom"
+                android:src="@drawable/list_cocktail_image_placeholder" />
+
+            <TextView
+                android:id="@+id/tvIngredients"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/how_to_prepare_margin_top"
+                android:layout_marginBottom="@dimen/how_to_prepare_margin_bottom"
+                android:text="@string/ingredients"
+                android:textSize="@dimen/cocktail_ingredients_text_size" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvIngredientsList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_ingredient_list"/>
+
+            <TextView
+                android:id="@+id/tvHowToPrepare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/how_to_prepare_margin_top"
+                android:layout_marginBottom="@dimen/how_to_prepare_margin_bottom"
+                android:text="@string/how_to_prepare"
+                android:textSize="@dimen/cocktail_ingredients_text_size" />
+
+            <TextView
+                android:id="@+id/tvInstructionsDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/cocktail_ingredients_text_size"
+                tools:text="Preparation instructions" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="250dp"
+        android:visibility="visible" />
+
+
+</LinearLayout>
