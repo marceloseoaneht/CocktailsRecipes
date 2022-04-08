@@ -3,8 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'androidx.navigation.safeargs.kotlin'
-    id 'dagger.hilt.android.plugin'
 }
+
 
 android {
     compileSdk 32
@@ -35,8 +35,12 @@ android {
 
     buildFeatures {
         viewBinding true
+        compose true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.1.1'
+    }
 }
 
 dependencies {
@@ -76,12 +80,6 @@ dependencies {
     //  Annotation processor
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 
-
-
-    //hilt
-    implementation "com.google.dagger:hilt-android:2.41"
-    kapt "com.google.dagger:hilt-compiler:2.41"
-
     //koin
     var koin_version = "3.2.0-beta-1"
     implementation "io.insert-koin:koin-android:$koin_version"
@@ -89,14 +87,34 @@ dependencies {
     implementation "io.insert-koin:koin-core:$koin_version"
     // Koin Test features
     testImplementation "io.insert-koin:koin-test:$koin_version"
+    // Jetpack Compose
+    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
 
     //okhttp3
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
+    //Coil
     implementation("io.coil-kt:coil:1.4.0")
+    implementation("io.coil-kt:coil-compose:2.0.0-rc02")
 
     //OkHttp interceptor
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
+    //Compose
+    // Integration with activities
+    implementation 'androidx.activity:activity-compose:1.4.0'
+    // Compose Material Design
+    implementation 'androidx.compose.material:material:1.1.1'
+    // Animations
+    implementation 'androidx.compose.animation:animation:1.1.1'
+    // Tooling support (Previews, etc.)
+    implementation 'androidx.compose.ui:ui-tooling:1.1.1'
+    // Integration with ViewModels
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1'
+    // UI Tests
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.1.1'
+    implementation "androidx.compose.runtime:runtime-livedata:1.1.1"
+    implementation("androidx.navigation:navigation-compose:2.4.1")
 
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.19.0"
 }

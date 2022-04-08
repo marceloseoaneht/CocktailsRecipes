@@ -14,7 +14,8 @@ interface DrinkListLocalDataSource {
 class DrinkListLocalDataSourceImpl(private val drinkListDao: DrinkListDao) :
     DrinkListLocalDataSource {
 
-    override suspend fun getDrinksFromDB(): Flow<List<DrinkListElement>> = drinkListDao.getDrinkList()
+    override suspend fun getDrinksFromDB(): Flow<List<DrinkListElement>> =
+        drinkListDao.getDrinkList()
 
     override fun saveDrinksToDB(drinks: List<DrinkListElement>) {
         drinkListDao.saveDrinkList(drinks)
@@ -24,6 +25,7 @@ class DrinkListLocalDataSourceImpl(private val drinkListDao: DrinkListDao) :
         drinkListDao.deleteAllDrinks()
     }
 
-    override fun getSearchedDrinks(searchQuery: String): Flow<List<DrinkListElement>> = drinkListDao.getDrinksByName(searchQuery)
+    override fun getSearchedDrinks(searchQuery: String): Flow<List<DrinkListElement>> =
+        drinkListDao.getDrinksByName(searchQuery)
 
 }

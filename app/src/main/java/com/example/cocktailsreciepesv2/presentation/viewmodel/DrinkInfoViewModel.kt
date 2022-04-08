@@ -2,48 +2,74 @@ package com.example.cocktailsreciepesv2.presentation.viewmodel
 
 import androidx.lifecycle.*
 import com.example.cocktailsreciepesv2.domain.model.CustomError
-import com.example.cocktailsreciepesv2.domain.model.DrinkInfo
+import com.example.cocktailsreciepesv2.domain.model.DrinkFavorite
 import com.example.cocktailsreciepesv2.domain.repository.DrinkInfoRepository
 import com.example.cocktailsreciepesv2.domain.model.Resource
+import com.example.cocktailsreciepesv2.domain.repository.DrinkFavoriteRepository
+import com.example.cocktailsreciepesv2.presentation.util.DrinkInfoScreenState
 import com.example.cocktailsreciepesv2.presentation.util.toResource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-class DrinkInfoViewModel(private val drinkInfoRepository: DrinkInfoRepository) : ViewModel() {
+class DrinkInfoViewModel(
+    private val drinkInfoRepository: DrinkInfoRepository,
+    private val drinkFavoriteRepository: DrinkFavoriteRepository,
+) : ViewModel() {
 
-    //region Livedata
-    val drinkInfo: LiveData<DrinkInfo>
-        get() = _drinkInfo
-    private val _drinkInfo = MutableLiveData<DrinkInfo>()
+    private val viewModelState = MutableStateFlow(DrinkInfoScreenState(isLoading = true))
 
-    val loading: LiveData<Boolean>
-        get() = _loading
-    private val _loading = MutableLiveData<Boolean>()
+    val uiState = viewModelState
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            viewModelState.value
+        )
 
-    val error: LiveData<Int>
-        get() = _error
-    private val _error = MutableLiveData<Int>()
-    //endregion
+    fun addDrinkToFavorite(drinkId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            drinkFavoriteRepository.addFavorite(drinkId)
+            viewModelState.update { it.copy(isFavorite = true) }
+        }
+    }
+
+    fun deleteDrinkFromFavorite(drinkId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            drinkFavoriteRepository.deleteFavorite(drinkId)
+            viewModelState.update { it.copy(isFavorite = false) }
+        }
+    }
+
+    private fun isDrinkFavorite(drinkId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val res = drinkFavoriteRepository.isFavorite(drinkId)
+            viewModelState.update { it.copy(isFavorite = res) }
+        }
+    }
 
     fun getDrinkInfo(drinkId: Int) {
-        _loading.postValue(true)
+        isDrinkFavorite(drinkId)
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val res = drinkInfoRepository.getDrinkInfo(drinkId)
                 when (res) {
                     is Resource.Success -> {
-                        _drinkInfo.postValue(res.data!!)
+                        viewModelState.update { it.copy(result = res.data) }
                     }
                     is Resource.Error -> {
-                        _error.postValue(res.error.toResource())
+                        viewModelState.update { it.copy(error = res.error.toResource()) }
                     }
                 }
 
             } catch (e: Exception) {
-                _error.postValue(CustomError.DATA_ERROR.toResource())
+                viewModelState.update { it.copy(error = CustomError.DATA_ERROR.toResource()) }
             }
-            _loading.postValue(false)
+            viewModelState.update { it.copy(isLoading = false) }
         }
     }
 
