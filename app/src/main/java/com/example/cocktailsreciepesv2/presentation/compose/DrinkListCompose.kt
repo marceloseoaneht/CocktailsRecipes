@@ -248,7 +248,7 @@ fun DrinkGridImage(image: String) {
         contentScale = ContentScale.Crop,
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(130.dp),
         alignment = Alignment.TopEnd
     )
 }
@@ -337,7 +337,7 @@ fun CardViewDrinkGrid(
         backgroundColor = Color.White,
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp)
+            .height(200.dp)
             .padding(5.dp, 5.dp),
         elevation = 10.dp
     ) {
