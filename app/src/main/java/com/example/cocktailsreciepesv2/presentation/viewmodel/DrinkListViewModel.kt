@@ -1,81 +1,114 @@
 package com.example.cocktailsreciepesv2.presentation.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cocktailsreciepesv2.domain.model.CustomError
-import com.example.cocktailsreciepesv2.domain.model.DrinkListElement
+import com.example.cocktailsreciepesv2.domain.repository.DrinkFavoriteRepository
 import com.example.cocktailsreciepesv2.domain.repository.DrinkListRepository
-import com.example.cocktailsreciepesv2.presentation.util.toResource
+import com.example.cocktailsreciepesv2.presentation.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
-import kotlin.reflect.KProperty
 
-class DrinkListViewModel(private val drinkListRepository: DrinkListRepository) : ViewModel() {
-    //region Livedata
-    val drinkListLiveData: LiveData<List<DrinkListElement>>
-        get() = _drinkList
-    private val _drinkList = MutableLiveData<List<DrinkListElement>>()
+class DrinkListViewModel(
+    private val drinkListRepository: DrinkListRepository,
+    private val drinkFavoriteRepository: DrinkFavoriteRepository,
+) : ViewModel() {
 
-    val loading: LiveData<Boolean>
-        get() = _loading
-    private val _loading = MutableLiveData<Boolean>()
+    private val drinkListViewModelState: MutableStateFlow<DrinkListViewModelState> =
+        MutableStateFlow(DrinkListViewModelState(isLoading = true))
 
-    val error: LiveData<Int>
-        get() = _error
-    private val _error = MutableLiveData<Int>()
-    //endregion
+    val uiState: StateFlow<DrinkListUiState> = drinkListViewModelState
+        .map { it.toUiState() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            drinkListViewModelState.value.toUiState()
+        )
 
     init {
         getDrinks()
+        getFavorites()
     }
-
-    private var searchParameter = ""
-    var auxDrinkList: List<DrinkListElement> = emptyList()
 
     fun search(query: String) {
-        searchParameter = query
-        showResult()
+        drinkListViewModelState.update { it.copy(searchString = query) }
     }
 
-    private fun showResult() {
-        _drinkList.postValue(auxDrinkList
-            .filter { it.name.contains(searchParameter, true) }
-            .sortedBy { it.name }
-        )
+    fun showSearchBar(value: Boolean) {
+        if (!value) {
+            search("")
+        }
+        drinkListViewModelState.update { it.copy(isSearching = value) }
+    }
+
+    private fun getFavorites() {
+        viewModelScope.launch(Dispatchers.IO) {
+            drinkFavoriteRepository.getFavorites().collect { list ->
+                drinkListViewModelState.update { viewModelState ->
+                    viewModelState.copy(favorites = list.map { it.drinkId }.toSet())
+                }
+            }
+        }
+    }
+
+    fun addDrinkToFavorite(drinkId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            drinkFavoriteRepository.addFavorite(drinkId)
+        }
+    }
+
+    fun deleteDrinkFromFavorite(drinkId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            drinkFavoriteRepository.deleteFavorite(drinkId)
+        }
+    }
+
+    fun enableGridView() {
+        drinkListViewModelState.update { it.copy(viewState = ViewState.GRID) }
+    }
+
+    fun enableListView() {
+        drinkListViewModelState.update { it.copy(viewState = ViewState.LIST) }
     }
 
     private fun getDrinks() {
-        _loading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             drinkListRepository.getDrinks().collect {
                 it.checkResult(
-                    onSuccess = {
-                        auxDrinkList = it
-                        showResult()
+                    onSuccess = { list ->
+                        drinkListViewModelState.update {
+                            it.copy(result = list,
+                                isLoading = false,
+                                isRefreshing = false)
+                        }
                     },
-                    onError = { _error.postValue(it.toResource()) }
+                    onError = {
+                        val error = it
+                        drinkListViewModelState.update {
+                            it.copy(error = error.toResource(),
+                                isLoading = false,
+                                isRefreshing = false)
+                        }
+                    }
                 )
-                _loading.postValue(false)
             }.runCatching {
-                _error.postValue(CustomError.DATA_ERROR.toResource())
+                drinkListViewModelState.update {
+                    it.copy(error = CustomError.DATA_ERROR.toResource(),
+                        isLoading = false,
+                        isRefreshing = false)
+                }
             }
         }
     }
 
     fun updateDrinks() {
-        _loading.postValue(false)
+        drinkListViewModelState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 drinkListRepository.updateDrinks()
             } catch (e: Exception) {
-                _error.postValue(CustomError.DATA_ERROR.toResource())
+                drinkListViewModelState.update { it.copy(error = CustomError.DATA_ERROR.toResource()) }
             }
         }
     }

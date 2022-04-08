@@ -6,4 +6,6 @@
     <string name="ingredients">Ingredients</string>
 
     <string name="data_error">Try again later</string>
+    <string name="add_fav_error">Error adding favourite</string>
+    <string name="del_fav_error">Error deleting favourite</string>
 </resources>

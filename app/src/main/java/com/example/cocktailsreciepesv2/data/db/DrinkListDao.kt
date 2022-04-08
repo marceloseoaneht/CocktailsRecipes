@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.Flow
 interface DrinkListDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveDrinkList(drinkList : List<DrinkListElement>)
+    fun saveDrinkList(drinkList: List<DrinkListElement>)
 
     @Query("DELETE FROM drink_list_table")
     fun deleteAllDrinks()
 
     @Query("SELECT * FROM drink_list_table")
-    fun getDrinkList() : Flow<List<DrinkListElement>>
+    fun getDrinkList(): Flow<List<DrinkListElement>>
 
     @Query("SELECT * FROM drink_list_table WHERE name LIKE :searchQuery")
     fun getDrinksByName(searchQuery: String): Flow<List<DrinkListElement>>
