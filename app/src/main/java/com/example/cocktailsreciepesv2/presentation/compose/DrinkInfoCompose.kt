@@ -30,7 +30,6 @@ import com.example.cocktailsreciepesv2.domain.model.Ingredient
 import com.example.cocktailsreciepesv2.presentation.viewmodel.DrinkInfoViewModel
 import org.koin.androidx.compose.getViewModel
 
-
 @Composable
 fun DrinkDetailScreen(id: Int?, navController: NavHostController) {
     val drinkInfoViewModel = getViewModel<DrinkInfoViewModel>()
@@ -79,7 +78,6 @@ fun DrinkDetailScreen(id: Int?, navController: NavHostController) {
         }
     )
 }
-
 
 @Composable
 fun CardViewDrinkInfo(
@@ -207,7 +205,6 @@ fun DisplayIngredients(ingredientList: List<Ingredient>) {
         }
     }
 }
-
 
 @Composable
 fun ProgressBar(color: Int) {

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.cocktailsreciepesv2.R
-import com.example.cocktailsreciepesv2.presentation.model.PDrinkElement
+import com.example.cocktailsreciepesv2.domain.model.DrinkListElementWithFavorite
 import com.example.cocktailsreciepesv2.presentation.util.ViewState
 import com.example.cocktailsreciepesv2.presentation.viewmodel.DrinkListViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -44,33 +44,33 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 fun DrinkListScreen(navController: NavHostController) {
     val drinkListViewModel = getViewModel<DrinkListViewModel>()
-    val stateUI by drinkListViewModel.uiState.collectAsState()
+    val state by drinkListViewModel.uiState.collectAsState()
 
     Scaffold(
         backgroundColor = Color.Black,
         topBar = {
             MainAppBar(
-                searchWidgetState = stateUI.isSearching,
+                searchWidgetState = state.isSearching,
                 onSearchClicked = { drinkListViewModel.search(it) },
                 onCloseClicked = { drinkListViewModel.showSearchBar(false) },
                 openSearch = { drinkListViewModel.showSearchBar(true) },
-                stringSearch = stateUI.searchString,
+                stringSearch = state.searchString,
                 onGridClicked = { drinkListViewModel.enableGridView() },
                 onListClicked = { drinkListViewModel.enableListView() }
             )
         },
         content = {
-            SwipeRefresh(state = rememberSwipeRefreshState(stateUI.isRefreshing),
+            SwipeRefresh(state = rememberSwipeRefreshState(state.isRefreshing),
                 onRefresh = { drinkListViewModel.updateDrinks() },
                 Modifier
                     .fillMaxHeight()
             ) {
                 DrinkListLazyColumn(
-                    stateUI.result,
+                    state.result,
                     navController,
                     onFavClicked = { drinkListViewModel.addDrinkToFavorite(it) },
                     onFavUnClicked = { drinkListViewModel.deleteDrinkFromFavorite(it) },
-                    stateUI.viewState
+                    state.viewState
                 )
             }
             Box(
@@ -79,7 +79,7 @@ fun DrinkListScreen(navController: NavHostController) {
                     .background(color = Color.Transparent),
                 contentAlignment = Alignment.Center
             ) {
-                if (stateUI.isLoading) {
+                if (state.isLoading) {
                     ProgressBar(R.color.black)
                 }
             }
@@ -277,7 +277,7 @@ fun DrinkGridText(text: String) {
 
 @Composable
 fun CardViewDrinkList(
-    drinkListElement: PDrinkElement,
+    drinkListElement: DrinkListElementWithFavorite,
     navController: NavHostController,
     onFavClicked: (Int) -> Unit,
     onFavUnClicked: (Int) -> Unit,
@@ -328,7 +328,7 @@ fun CardViewDrinkList(
 
 @Composable
 fun CardViewDrinkGrid(
-    drinkListElement: PDrinkElement,
+    drinkListElement: DrinkListElementWithFavorite,
     navController: NavHostController,
     onFavClicked: (Int) -> Unit,
     onFavUnClicked: (Int) -> Unit,
@@ -379,7 +379,7 @@ fun CardViewDrinkGrid(
 
 @Composable
 fun DrinkListLazyColumn(
-    drinkList: List<PDrinkElement>,
+    drinkList: List<DrinkListElementWithFavorite>,
     navController: NavHostController,
     onFavClicked: (Int) -> Unit,
     onFavUnClicked: (Int) -> Unit,

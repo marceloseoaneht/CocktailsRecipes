@@ -17,6 +17,7 @@ import com.example.cocktailsreciepesv2.data.repository.drinkList.*
 import com.example.cocktailsreciepesv2.domain.repository.DrinkFavoriteRepository
 import com.example.cocktailsreciepesv2.domain.repository.DrinkInfoRepository
 import com.example.cocktailsreciepesv2.domain.repository.DrinkListRepository
+import com.example.cocktailsreciepesv2.domain.usecase.*
 import com.example.cocktailsreciepesv2.presentation.viewmodel.DrinkInfoViewModel
 import com.example.cocktailsreciepesv2.presentation.viewmodel.DrinkListViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -39,6 +40,10 @@ val appModule = module {
     factory<DrinkListLocalDataSource> { DrinkListLocalDataSourceImpl(get()) }
     factory<DrinkFavoriteLocalDataSource> { DrinkFavoriteLocalDataSourceImpl(get()) }
 
+    factory<DrinkInfoInteractor> { DrinkInfoInteractorImpl(get()) }
+    factory<DrinkFavoriteInteractor> { DrinkFavoriteInteractorImpl(get()) }
+    factory<DrinkListInteractor> { DrinkListInteractorImpl(get(), get()) }
+
 
     fun provideDatabase(application: Application): TCDBDatabase {
         return Room.databaseBuilder(application, TCDBDatabase::class.java, "drink_list_database")
@@ -49,6 +54,7 @@ val appModule = module {
     fun provideDrinkListDao(database: TCDBDatabase): DrinkListDao {
         return database.drinkListDao()
     }
+
     fun provideDrinkFavoriteDao(database: TCDBDatabase): DrinkFavoriteDao {
         return database.drinkFavoriteDao()
     }

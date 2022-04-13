@@ -3,36 +3,35 @@ package com.example.cocktailsreciepesv2.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cocktailsreciepesv2.domain.model.CustomError
-import com.example.cocktailsreciepesv2.domain.repository.DrinkFavoriteRepository
-import com.example.cocktailsreciepesv2.domain.repository.DrinkListRepository
+import com.example.cocktailsreciepesv2.domain.usecase.DrinkFavoriteInteractor
+import com.example.cocktailsreciepesv2.domain.usecase.DrinkListInteractor
 import com.example.cocktailsreciepesv2.presentation.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class DrinkListViewModel(
-    private val drinkListRepository: DrinkListRepository,
-    private val drinkFavoriteRepository: DrinkFavoriteRepository,
+    private val drinkListInteractor: DrinkListInteractor,
+    private val drinkFavoriteInteractor: DrinkFavoriteInteractor
 ) : ViewModel() {
 
     private val drinkListViewModelState: MutableStateFlow<DrinkListViewModelState> =
         MutableStateFlow(DrinkListViewModelState(isLoading = true))
 
-    val uiState: StateFlow<DrinkListUiState> = drinkListViewModelState
-        .map { it.toUiState() }
+    val uiState: StateFlow<DrinkListViewModelState> = drinkListViewModelState
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            drinkListViewModelState.value.toUiState()
+            drinkListViewModelState.value
         )
 
     init {
         getDrinks()
-        getFavorites()
     }
 
     fun search(query: String) {
         drinkListViewModelState.update { it.copy(searchString = query) }
+        drinkListInteractor.updateSearchParameter(query)
     }
 
     fun showSearchBar(value: Boolean) {
@@ -42,25 +41,15 @@ class DrinkListViewModel(
         drinkListViewModelState.update { it.copy(isSearching = value) }
     }
 
-    private fun getFavorites() {
-        viewModelScope.launch(Dispatchers.IO) {
-            drinkFavoriteRepository.getFavorites().collect { list ->
-                drinkListViewModelState.update { viewModelState ->
-                    viewModelState.copy(favorites = list.map { it.drinkId }.toSet())
-                }
-            }
-        }
-    }
-
     fun addDrinkToFavorite(drinkId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            drinkFavoriteRepository.addFavorite(drinkId)
+            drinkFavoriteInteractor.addDrinkToFavorite(drinkId)
         }
     }
 
     fun deleteDrinkFromFavorite(drinkId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            drinkFavoriteRepository.deleteFavorite(drinkId)
+            drinkFavoriteInteractor.deleteDrinkFromFavorite(drinkId)
         }
     }
 
@@ -74,7 +63,7 @@ class DrinkListViewModel(
 
     private fun getDrinks() {
         viewModelScope.launch(Dispatchers.IO) {
-            drinkListRepository.getDrinks().collect {
+            drinkListInteractor.getDrinks().collect {
                 it.checkResult(
                     onSuccess = { list ->
                         drinkListViewModelState.update {
@@ -106,7 +95,7 @@ class DrinkListViewModel(
         drinkListViewModelState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                drinkListRepository.updateDrinks()
+                drinkListInteractor.updateDrinks()
             } catch (e: Exception) {
                 drinkListViewModelState.update { it.copy(error = CustomError.DATA_ERROR.toResource()) }
             }

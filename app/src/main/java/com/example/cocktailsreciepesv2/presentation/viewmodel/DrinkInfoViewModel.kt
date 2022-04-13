@@ -1,25 +1,23 @@
 package com.example.cocktailsreciepesv2.presentation.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.cocktailsreciepesv2.domain.model.CustomError
-import com.example.cocktailsreciepesv2.domain.model.DrinkFavorite
-import com.example.cocktailsreciepesv2.domain.repository.DrinkInfoRepository
 import com.example.cocktailsreciepesv2.domain.model.Resource
-import com.example.cocktailsreciepesv2.domain.repository.DrinkFavoriteRepository
+import com.example.cocktailsreciepesv2.domain.usecase.DrinkFavoriteInteractor
+import com.example.cocktailsreciepesv2.domain.usecase.DrinkInfoInteractor
 import com.example.cocktailsreciepesv2.presentation.util.DrinkInfoScreenState
 import com.example.cocktailsreciepesv2.presentation.util.toResource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class DrinkInfoViewModel(
-    private val drinkInfoRepository: DrinkInfoRepository,
-    private val drinkFavoriteRepository: DrinkFavoriteRepository,
+    private val drinkInfoInteractor: DrinkInfoInteractor,
+    private val drinkFavoriteInteractor: DrinkFavoriteInteractor
 ) : ViewModel() {
 
     private val viewModelState = MutableStateFlow(DrinkInfoScreenState(isLoading = true))
@@ -33,21 +31,21 @@ class DrinkInfoViewModel(
 
     fun addDrinkToFavorite(drinkId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            drinkFavoriteRepository.addFavorite(drinkId)
+            drinkFavoriteInteractor.addDrinkToFavorite(drinkId)
             viewModelState.update { it.copy(isFavorite = true) }
         }
     }
 
     fun deleteDrinkFromFavorite(drinkId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            drinkFavoriteRepository.deleteFavorite(drinkId)
+            drinkFavoriteInteractor.deleteDrinkFromFavorite(drinkId)
             viewModelState.update { it.copy(isFavorite = false) }
         }
     }
 
     private fun isDrinkFavorite(drinkId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val res = drinkFavoriteRepository.isFavorite(drinkId)
+            val res = drinkFavoriteInteractor.isDrinkFavorite(drinkId)
             viewModelState.update { it.copy(isFavorite = res) }
         }
     }
@@ -56,7 +54,7 @@ class DrinkInfoViewModel(
         isDrinkFavorite(drinkId)
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val res = drinkInfoRepository.getDrinkInfo(drinkId)
+                val res = drinkInfoInteractor.getDrinkInfo(drinkId)
                 when (res) {
                     is Resource.Success -> {
                         viewModelState.update { it.copy(result = res.data) }

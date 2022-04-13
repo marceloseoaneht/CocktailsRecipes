@@ -21,7 +21,7 @@ class DrinkListRepositoryImpl(
 
     private var firstTime = true
 
-    override suspend fun getDrinks(): Flow<Resource<List<DrinkListElement>>> {
+    override suspend fun getDrinks(): Flow<List<DrinkListElement>> {
         if (firstTime) {
             CoroutineScope(Dispatchers.IO).launch {
                 val res = getDrinksFromAPI()
@@ -32,11 +32,6 @@ class DrinkListRepositoryImpl(
             firstTime = false
         }
         return drinkListLocalDataSource.getDrinksFromDB()
-            .map<List<DrinkListElement>, Resource<List<DrinkListElement>>> {
-                Resource.Success(it)
-            }.catch {
-                emit(Resource.Error(CustomError.DATA_ERROR))
-            }
     }
 
     override suspend fun updateDrinks() {
